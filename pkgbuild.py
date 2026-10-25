@@ -18,7 +18,7 @@ pkgdesc="Linux {version} with modprobed-db modules and trimmed debug options"
 arch=(x86_64)
 url="https://www.kernel.org"
 license=(GPL-2.0-only)
-makedepends=(bc cpio gettext libelf pahole perl python tar xz)
+makedepends=(bc cpio gettext libelf pahole perl python tar xz clang llvm lld)
 options=(!debug !strip)
 install={pkgbase}.install
 source=("linux-$pkgver.tar.xz::{tarball_url}"
@@ -32,7 +32,7 @@ prepare() {{
 
 build() {{
   cd "linux-$pkgver"
-  make -j"$(nproc)" bzImage modules
+  make CC=clang LLVM=1 -j"$(nproc)" bzImage modules
 }}
 
 package() {{

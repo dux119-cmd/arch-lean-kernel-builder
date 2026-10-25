@@ -20,6 +20,15 @@ MODPROBED_DB: Path = Path.home() / ".local/share/modprobed-db/modprobed.db"
 LOCALVERSION: str = "-cachyos-local"
 
 DISABLE: tuple[str, ...] = (
+    "CC_OPTIMIZE_FOR_PERFORMANCE",
+    "BLK_DEBUG_FS",
+    "DEBUG_FS",
+    "DEBUG_FS_ALLOW_ALL",
+    "MODULE_DEBUGFS",
+    "CFG80211_DEBUGFS",
+    "MAC80211_DEBUGFS",
+    "PCIE_DW_DEBUGFS",
+    "RTW88_DEBUGFS",
     "DEBUG_INFO",  # also drops BTF; large, only needed by debuggers
     "DEBUG_KERNEL",  # gates lockdep, spinlock/mutex/VM debugging and most DEBUG_*
     "BPF",
@@ -227,8 +236,6 @@ DISABLE: tuple[str, ...] = (
     "X86_INTEL_MEMORY_PROTECTION_KEYS",
     "CHED_CLUSTER",
     "SECURITY_SAFESETID",
-    "SECURITY_PATH",
-    "SECURITY_NETWORK",
     "SECURITYFS",
     "ATA_SFF",
     "HOTPLUG_PCI_PCIE",
@@ -363,8 +370,22 @@ DISABLE: tuple[str, ...] = (
     "RAS",
     "DAX",
     "DEBUG_KERNEL",
+    "CFI",
+    "KSTACK_ERASE",
+    "WARN_CONTEXT_ANALYSIS",
+    "PAGE_POISONING",
+    "LTO_NONE",
 )
 ENABLE: tuple[str, ...] = (
+    "DEBUG_FS_ALLOW_NONE",
+    "RANDSTRUCT_NONE",
+    "CC_OPTIMIZE_FOR_SIZE",
+    "LTO",
+    "LTO_CLANG",
+    "HAS_LTO_CLANG",
+    "LTO_CLANG_FULL",
+    "AUTOFDO_CLANG",
+    "PROPELLER_CLANG",
     "LOCALVERSION_AUTO",
     "PREEMPT_LAZY",
     "SCHED_CORE",
@@ -383,6 +404,9 @@ ENABLE: tuple[str, ...] = (
     "SND_HDA_CODEC_HDMI_INTEL",
     "SND_HDA_CODEC_REALTEK",
     "SND_HDA_CODEC_ALC269",
+    "SECURITY",
+    "SECURITY_PATH",
+    "SECURITY_NETWORK",
     "SECURITY_LANDLOCK",
 )  # local-only package, optimize for this CPU
 
@@ -509,10 +533,12 @@ def configure(tree: Path, db: Path) -> None:
     config = tree / ".config"
     write_base_config(config)
     run(["sed", "-i", "s/select DEBUG_KERNEL//g", tree / "init/Kconfig"])
-    run(["make", "-C", str(tree), f"LSMOD={db}", "localmodconfig"])
+    run(
+        ["make", "CC=clang", "LLVM=1", "-C", str(tree), f"LSMOD={db}", "localmodconfig"]
+    )
     run([str(tree / "scripts/config"), *scripts_config_args(config)])
     tune_kernel_config(config)
-    run(["make", "-C", str(tree), "olddefconfig"])
+    run(["make", "CC=clang", "LLVM=1", "-C", str(tree), "olddefconfig"])
 
 
 if __name__ == "__main__":
