@@ -20,10 +20,24 @@ MODPROBED_DB: Path = Path.home() / ".local/share/modprobed-db/modprobed.db"
 LOCALVERSION: str = "-cachyos-local"
 
 DISABLE: tuple[str, ...] = (
+    "MODULE_DEBUGFS",
+    "HZ_1000",
+    "X86_BUS_LOCK_DETECT",
+    "PERF_EVENTS_AMD_BRS",
+    "CPU_SUP_AMD",
+    "X86_AMD_PSTATE",
+    "AMD_NB",
+    "AMD_NODE",
+    "USB_PCI_AMD",
+    "AMD_HFI",
+    "AMD_3D_VCACHE",
+    "AMD_WBRF",
+    "AMD_IOMMU",
+    "IOMMU_PT_AMDV1",
     "CC_OPTIMIZE_FOR_PERFORMANCE",
     "BLK_DEBUG_FS",
-    "DEBUG_FS",
     "DEBUG_FS_ALLOW_ALL",
+    "DEBUG_FS",
     "MODULE_DEBUGFS",
     "CFG80211_DEBUGFS",
     "MAC80211_DEBUGFS",
@@ -370,22 +384,11 @@ DISABLE: tuple[str, ...] = (
     "RAS",
     "DAX",
     "DEBUG_KERNEL",
-    "CFI",
-    "KSTACK_ERASE",
-    "WARN_CONTEXT_ANALYSIS",
-    "PAGE_POISONING",
-    "LTO_NONE",
 )
+
 ENABLE: tuple[str, ...] = (
+    "HZ_300",
     "DEBUG_FS_ALLOW_NONE",
-    "RANDSTRUCT_NONE",
-    "CC_OPTIMIZE_FOR_SIZE",
-    "LTO",
-    "LTO_CLANG",
-    "HAS_LTO_CLANG",
-    "LTO_CLANG_FULL",
-    "AUTOFDO_CLANG",
-    "PROPELLER_CLANG",
     "LOCALVERSION_AUTO",
     "PREEMPT_LAZY",
     "SCHED_CORE",
@@ -500,6 +503,14 @@ def tune_kernel_config(config_path=".config"):
         "CONFIG_NR_CPUS_RANGE_END": nr_cpus,
         "CONFIG_NR_CPUS_DEFAULT": nr_cpus,
         "CONFIG_NR_CPUS": nr_cpus,
+        "CONFIG_HZ": 300,
+        "CONFIG_LTO_CLANG_FULL": "y",
+        "CONFIG_LTO_CLANG": "y",
+        "CONFIG_LTO": "y",
+        "CONFIG_AUTOFDO_CLANG": "y",
+        "CONFIG_PROPELLER_CLANG": "y",
+        "CONFIG_RANDSTRUCT_NONE": "y",
+        "CONFIG_CC_OPTIMIZE_FOR_SIZE": "y",
     }
 
     if not os.path.exists(config_path):
@@ -528,16 +539,47 @@ def tune_kernel_config(config_path=".config"):
     return config_values
 
 
+def disable_features(config_path=".config"):
+
+    as_disabled = lambda x: f"# CONFIG_{x} is not set\n"
+
+    features = {
+        "LTO_NONE",
+        "LTO_CLANG_THIN",
+        "CFI",
+        "KSTACK_ERASE",
+        "PAGE_POISONING",
+    }
+
+    with open(config_path, "r") as f:
+        lines = f.readlines()
+
+    for i, line in enumerate(lines):
+        for feature in list(features):
+            if "CONFIG_" + feature in line:
+                lines[i] = as_disabled(feature)
+                features.discard(feature)  # Remove by value
+                break
+
+    # Append patterns that weren't found (only remaining items)
+    for feature in features:
+        lines.append(as_disabled(feature))
+
+    with open(config_path, "w") as f:
+        f.writelines(lines)
+
+
 def configure(tree: Path, db: Path) -> None:
     check_modprobed_db(db)
     config = tree / ".config"
     write_base_config(config)
     run(["sed", "-i", "s/select DEBUG_KERNEL//g", tree / "init/Kconfig"])
+    tune_kernel_config(config)
+    disable_features(config)
     run(
         ["make", "CC=clang", "LLVM=1", "-C", str(tree), f"LSMOD={db}", "localmodconfig"]
     )
     run([str(tree / "scripts/config"), *scripts_config_args(config)])
-    tune_kernel_config(config)
     run(["make", "CC=clang", "LLVM=1", "-C", str(tree), "olddefconfig"])
 
 
