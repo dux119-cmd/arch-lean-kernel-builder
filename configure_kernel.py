@@ -20,7 +20,17 @@ MODPROBED_DB: Path = Path.home() / ".local/share/modprobed-db/modprobed.db"
 LOCALVERSION: str = "-cachyos-local"
 
 DISABLE: tuple[str, ...] = (
+    "X86_DEBUGCTLMSR",
+    "ARCH_SUPPORTS_DEBUG_PAGEALLOC",
     "MODULE_DEBUGFS",
+    "OVMF_DEBUG_LOG",
+    "PNP_DEBUG_MESSAGES",
+    "RTW88_DEBUG",
+    "DEBUG_WX",
+    "HAVE_DEBUG_KMEMLEAK",
+    "LOCK_DEBUGGING_SUPPORT",
+    "EDAC_ATOMIC_SCRUB",
+    "EDAC_SUPPORT",
     "HZ_1000",
     "NO_HZ",
     "IRQ_TIME_ACCOUNTING",
@@ -57,7 +67,6 @@ DISABLE: tuple[str, ...] = (
     "DEBUG_FS_ALLOW_ALL",
     "DEBUG_FS",
     "ZSMALLOC_STAT",
-    "MODULE_DEBUGFS",
     "CFG80211_DEBUGFS",
     "MAC80211_DEBUGFS",
     "PCIE_DW_DEBUGFS",
@@ -636,7 +645,6 @@ def disable_features(config_path=".config"):
 
     with open(config_path, "w") as f:
         f.writelines(lines)
-
 
 def configure(tree: Path, db: Path) -> None:
     check_modprobed_db(db)
