@@ -42,7 +42,7 @@ def main() -> None:
     # -s installs makedepends (uses sudo), -f overwrites old output, -c cleans the work tree
     subprocess.run(["makepkg", "-sfc"], cwd=build_dir, check=True)
     for pkg in sorted(build_dir.glob("*.pkg.tar.*")):
-        print(f"built: {pkg}")
+        print(f"paru -U {pkg}")
 
 
 if __name__ == "__main__":
