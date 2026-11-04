@@ -14,14 +14,54 @@ from pathlib import Path
 import os
 import re
 import multiprocessing
+import urllib.request
 
 PROC_CONFIG: Path = Path("/proc/config.gz")
 MODPROBED_DB: Path = Path.home() / ".local/share/modprobed-db/modprobed.db"
 LOCALVERSION: str = "-cachyos-local"
 
 DISABLE: tuple[str, ...] = (
+    "GPIO_BT8XX",
+    "SND_SE6X",
+    "BLK_ERROR_INJECTION",
+    "DINGHAI",
+    "DRM_RAS",
+    "I2C_MUX",
+    "MTD_VIRT_CONCAT",
+    "MUX_CORE",
+    "PCI_DOE",
+    "PCI_TSM",
+    "PM_QOS_CPU_SYSTEM_WAKEUP",
+    "RSEQ_SLICE_EXTENSION",
+    "SND_HDA_CODEC_ALC260",
+    "SND_HDA_CODEC_ALC262",
+    "SND_HDA_CODEC_ALC268",
+    "SND_HDA_CODEC_ALC662",
+    "SND_HDA_CODEC_ALC680",
+    "SND_HDA_CODEC_ALC861",
+    "SND_HDA_CODEC_ALC861VD",
+    "SND_HDA_CODEC_ALC880",
+    "SND_HDA_CODEC_ALC882",
+    "SND_HDA_CODEC_HDMI_ATI",
+    "SND_HDA_CODEC_HDMI_NVIDIA",
+    "SND_HDA_CODEC_HDMI_NVIDIA_MCP",
+    "SND_HDA_CODEC_HDMI_SIMPLE",
+    "SND_HDA_CODEC_HDMI_TEGRA",
+    "WARN_CONTEXT_ANALYSIS",
+    "X86_PLATFORM_DRIVERS_UNIWILL",
+    "DINGHAI_PF",
+    "I2C_MUX_LTC4306",
+    "I2C_MUX_MLXCPLD",
+    "I2C_MUX_PCA9541",
+    "I2C_MUX_REG",
+    "MULTIPLEXER",
+    "MUX_ADG792A",
+    "NET_DEVLINK",
+    "PCI_IDE",
+    "TSM",
     "X86_DEBUGCTLMSR",
     "ARCH_SUPPORTS_DEBUG_PAGEALLOC",
+    "MODULE_UNLOAD_TAINT_TRACKING",
     "MODULE_DEBUGFS",
     "OVMF_DEBUG_LOG",
     "PNP_DEBUG_MESSAGES",
@@ -458,6 +498,7 @@ DISABLE: tuple[str, ...] = (
 )
 
 ENABLE: tuple[str, ...] = (
+    "LD_DEAD_CODE_DATA_ELIMINATION",
     "CRYPTO_PCRYPT",
     "CRYPTO_AES_NI_INTEL",
     "USER_NS",
@@ -501,7 +542,12 @@ def check_modprobed_db(db: Path) -> None:
         raise RuntimeError(f"modprobed-db database missing or empty: {db}")
 
 
-def write_base_config(dest: Path) -> None:
+def write_default_config(dest: Path) -> None:
+    default_config_url = "https://raw.githubusercontent.com/CachyOS/linux-cachyos/refs/heads/master/linux-cachyos/config"
+    urllib.request.urlretrieve(default_config_url, dest)
+
+
+def write_previous_config(dest: Path) -> None:
     if not PROC_CONFIG.is_file():
         raise RuntimeError(
             "/proc/config.gz missing: the running kernel needs CONFIG_IKCONFIG_PROC"
@@ -646,18 +692,22 @@ def disable_features(config_path=".config"):
     with open(config_path, "w") as f:
         f.writelines(lines)
 
+
 def configure(tree: Path, db: Path) -> None:
     check_modprobed_db(db)
     config = tree / ".config"
-    write_base_config(config)
+
+    write_default_config(config)
+    # write_previous_config(config)
+
     run(["sed", "-i", "s/select DEBUG_KERNEL//g", tree / "init/Kconfig"])
-    tune_kernel_config(config)
     disable_features(config)
     run(
         ["make", "CC=clang", "LLVM=1", "-C", str(tree), f"LSMOD={db}", "localmodconfig"]
     )
     run([str(tree / "scripts/config"), *scripts_config_args(config)])
     run(["make", "CC=clang", "LLVM=1", "-C", str(tree), "olddefconfig"])
+    tune_kernel_config(config)
 
 
 if __name__ == "__main__":
