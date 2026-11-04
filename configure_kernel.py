@@ -21,6 +21,14 @@ MODPROBED_DB: Path = Path.home() / ".local/share/modprobed-db/modprobed.db"
 LOCALVERSION: str = "-cachyos-local"
 
 DISABLE: tuple[str, ...] = (
+    "ETHERNET",
+    "NET_VENDOR_ZTE",
+    "WLAN_VENDOR_MORSEMICRO",
+    "WLAN_VENDOR_NXP",
+    "USB_EHCI_HCD",
+    "USB_OHCI_HCD",
+    "USB_UHCI_HCD",
+    "LIST_HARDENED",
     "GPIO_BT8XX",
     "SND_SE6X",
     "BLK_ERROR_INJECTION",
@@ -101,6 +109,12 @@ DISABLE: tuple[str, ...] = (
     "AMD_3D_VCACHE",
     "AMD_WBRF",
     "AMD_IOMMU",
+    "IOMMU_SVA",
+    "INTEL_IOMMU_SVM",
+    "IOMMU_IOPF",
+    "IOMMU_PERF_EVENTS",
+    "IOMMU_PT",
+    "IOMMU_PT_VTDSS",
     "IOMMU_PT_AMDV1",
     "CC_OPTIMIZE_FOR_PERFORMANCE",
     "BLK_DEBUG_FS",
@@ -498,6 +512,7 @@ DISABLE: tuple[str, ...] = (
 )
 
 ENABLE: tuple[str, ...] = (
+    "BLK_DEV_LOOP",
     "LD_DEAD_CODE_DATA_ELIMINATION",
     "CRYPTO_PCRYPT",
     "CRYPTO_AES_NI_INTEL",
@@ -530,6 +545,12 @@ ENABLE: tuple[str, ...] = (
     "LEGACY_VSYSCALL_NONE",
     "NO_HZ_IDLE",
     "TICK_CPU_ACCOUNTING",
+    "ISO9660_FS",
+    "JOLIET",
+    "EXFAT_FS",
+    "NTFS3_FS",
+    "INTEL_IDMA64",
+    "INTEL_IOMMU_DEFAULT_ON",
 )  # local-only package, optimize for this CPU
 
 
