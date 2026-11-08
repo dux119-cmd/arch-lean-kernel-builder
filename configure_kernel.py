@@ -21,6 +21,12 @@ MODPROBED_DB: Path = Path.home() / ".local/share/modprobed-db/modprobed.db"
 LOCALVERSION: str = "-cachyos-local"
 
 DISABLE: tuple[str, ...] = (
+    "CPU_FREQ_GOV_USERSPACE",
+    "CPU_FREQ_GOV_ONDEMAND",
+    "CPU_FREQ_GOV_CONSERVATIVE",
+    "CPU_IDLE_GOV_MENU",
+    "ACPI_CPU_FREQ_PSS",
+    "ACPI_PROCESSOR_IDLE",
     "ETHERNET",
     "NET_VENDOR_ZTE",
     "WLAN_VENDOR_MORSEMICRO",
@@ -110,12 +116,26 @@ DISABLE: tuple[str, ...] = (
     "AMD_WBRF",
     "AMD_IOMMU",
     "IOMMU_SVA",
+    "INTEL_IOMMU_DEFAULT_ON",
     "INTEL_IOMMU_SVM",
     "IOMMU_IOPF",
     "IOMMU_PERF_EVENTS",
     "IOMMU_PT",
     "IOMMU_PT_VTDSS",
     "IOMMU_PT_AMDV1",
+    "IOMMU_IOVA",
+    "IOMMU_API",
+    "IOMMU_SUPPORT",
+    "IOMMU_DEFAULT_DMA_LAZY",
+    "IOMMU_DMA",
+    "IOMMU_IOPF",
+    "INTEL_IOMMU",
+    "INTEL_IOMMU_DEFAULT_ON",
+    "INTEL_IOMMU_SCALABLE_MODE_DEFAULT_ON",
+    "INTEL_IOMMU_PERF_EVENTS",
+    "IOMMU_PT",
+    "IOMMU_PT_VTDSS",
+    "IOMMU_PT_X86_64",
     "CC_OPTIMIZE_FOR_PERFORMANCE",
     "BLK_DEBUG_FS",
     "DEBUG_FS_ALLOW_ALL",
@@ -550,7 +570,6 @@ ENABLE: tuple[str, ...] = (
     "EXFAT_FS",
     "NTFS3_FS",
     "INTEL_IDMA64",
-    "INTEL_IOMMU_DEFAULT_ON",
 )  # local-only package, optimize for this CPU
 
 
